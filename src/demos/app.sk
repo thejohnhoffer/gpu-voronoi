@@ -307,13 +307,13 @@ def getContainer(id string) HTMLElement {
 def main {
     window.addEventListener("load", => {
         initializePaintDemo(getContainer("paint-demo-container"))
-        initializeFishDemo(getContainer("fish-demo-container"))
-        initializePhotoDemo(getContainer("photo-demo-container"))
-        initializeJfaPatternDemo(getContainer("jfa-pattern-demo-container"))
-        initializeSliderDemo(getContainer("slider-demo-container"))
-        initializeDistanceDemo(getContainer("distance-demo-container"))
-        initializeShadowDemo(getContainer("shadow-demo-container"))
-        initializeGridDemo(getContainer("grid-demo-container"))
+        #initializeFishDemo(getContainer("fish-demo-container"))
+        #initializePhotoDemo(getContainer("photo-demo-container"))
+        #initializeJfaPatternDemo(getContainer("jfa-pattern-demo-container"))
+        #initializeSliderDemo(getContainer("slider-demo-container"))
+        #initializeDistanceDemo(getContainer("distance-demo-container"))
+        #initializeShadowDemo(getContainer("shadow-demo-container"))
+        #initializeGridDemo(getContainer("grid-demo-container"))
     })
 }
 

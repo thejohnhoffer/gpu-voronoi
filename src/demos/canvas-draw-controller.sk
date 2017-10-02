@@ -28,38 +28,68 @@ class CanvasDrawController {
         _mouseBehaviorManager.listenOnElement(_inputCanvas)
         _mouseBehaviorManager.listenOnElement(_outputCanvas)
 
+        var tempPair = [Vector.new(0, 0), Vector.new(0, 0)]
+        
         _mouseBehaviorManager.onDown((e MouseEvent) => {
             if e.target == _inputCanvas || e.target == _outputCanvas {
-                _changeColorAndDraw(e.location)
+              tempPair = [e.location, e.location]
             }
         })
+
 
         _mouseBehaviorManager.onMove((e MouseEvent) => {
+
             if e.isDown {
-                _changeColorAndDraw(e.location)
+                tempPair = _drawPair(e.location, tempPair)
             }
         })
 
-        const canvasRect = _inputCanvas.getBoundingClientRect
-        _changeColorAndDraw(Vector.new(canvasRect.width / 2, canvasRect.height / 2))
     }
 
-    def _changeColorAndDraw(point Vector) {
-        const canvasRect = _inputCanvas.getBoundingClientRect
+    def _drawPoint(p Vector, c Color) {
+        _ctx.beginPath
+        _ctx.rect(
+            (p.x - dotRadius) as int,
+            (p.y - dotRadius) as int,
+            dotRadius * 2,
+            dotRadius * 2
+        )
+        _ctx.fillStyle = c.toCSS
+        _ctx.fill
+    }
 
-        if point.x > 0 && point.y > 0 && point.x < canvasRect.width && point.y < canvasRect.height {
-            _ctx.beginPath
-            _ctx.rect(
-                (point.x - dotRadius) as int,
-                (point.y - dotRadius) as int,
-                dotRadius * 2,
-                dotRadius * 2
-            )
-            _ctx.fillStyle = Color.randomPurple.toCSS
-            _ctx.fill
+    def _drawPair(outer Vector, prior List<Vector>) List<Vector> {
+        const canvasRect = _inputCanvas.getBoundingClientRect
+        const canvasShape = Vector.new(canvasRect.width,canvasRect.height)
+        
+        const colorA = Color.new(0.5, 0.2, 0.3, 1.0)
+        const colorB = Color.new(0.3, 0.5, 0.2, 1.0)
+        const delta double = 10
+
+        if !outer.clip(canvasShape) {
+            return prior
+        }
+
+        # Distance to last point on curve
+        var outerPath = prior[0] - outer
+        if outerPath.length > delta {
+            _drawPoint(outer, colorA)
+            prior[0] = outer
+
+            # Get surface normal of line drawn 
+            var surface = outerPath.rotated(Math.PI/2).normalize
+            var inner = outer + surface*10
+            var innerPath = prior[1] - inner
+
+            if inner.clip(canvasShape) && innerPath.length > delta {
+                _drawPoint(inner, colorB)
+                prior[1] = inner
+            }
+
             if _onDraw != null {
                 _onDraw()
             }
         }
+        return prior
     }
 }
