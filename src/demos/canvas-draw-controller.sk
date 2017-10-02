@@ -58,39 +58,54 @@ class CanvasDrawController {
         _ctx.fill
     }
 
-    def _drawPair(outer Vector, prior List<Vector>) List<Vector> {
+    def _drawPair(center Vector, prior List<Vector>) List<Vector> {
         const canvasRect = _inputCanvas.getBoundingClientRect
         const canvasShape = Vector.new(canvasRect.width,canvasRect.height)
         
         const colorA = Color.new(0.5, 0.2, 0.3, 1.0)
         const colorB = Color.new(0.3, 0.5, 0.2, 1.0)
         const clockwise double = -Math.PI/2
-        const thickness  double = 10
-        const delta double = 10
-
-        if !outer.clip(canvasShape) {
+        const thickness  double = 30
+        const centerDelta double = 10
+        const edgeDelta double = 20
+        var canDraw = false
+        
+        if !center.clip(canvasShape) {
             return prior
         }
 
-        # Distance to last point on curve
-        var outerPath = prior[0] - outer
-        if outerPath.length > delta {
-            _drawPoint(outer, colorA)
-            prior[0] = outer
+        # User input path
+        var priorCenter = (prior[0] + prior[1]) / 2
+        var centerPath = priorCenter - center
 
-            # Get surface normal of line drawn 
-            var surface = outerPath.rotated(clockwise).normalize
-            var inner = outer + surface * thickness
-            var innerPath = prior[1] - inner
+        if centerPath.length <= centerDelta {
+            return prior
+        }
 
-            if inner.clip(canvasShape) && innerPath.length > delta {
+        # New points at right angles to input path
+        var outerSurface = centerPath.rotated(-clockwise).normalize
+        var innerSurface = centerPath.rotated(clockwise).normalize
+        var outer = center + outerSurface * thickness /2
+        var inner = center + innerSurface * thickness /2
+
+        if outer.clip(canvasShape){
+            if (prior[0] - outer).length > edgeDelta {
+                _drawPoint(outer, colorA)
+                prior[0] = outer
+                canDraw = true
+            }
+        }
+
+        if inner.clip(canvasShape){
+            if  (prior[1] - inner).length > edgeDelta {
                 _drawPoint(inner, colorB)
                 prior[1] = inner
+                canDraw = true
             }
+        }
 
-            if _onDraw != null {
-                _onDraw()
-            }
+        if canDraw && _onDraw != null {
+            _onDraw()
         }
         return prior
     }
