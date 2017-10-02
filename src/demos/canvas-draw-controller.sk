@@ -3,7 +3,13 @@
 # generated (pink-ish) colors.
 
 namespace CanvasDrawController {
-    const dotRadius = 2
+    const colorA = Color.new(0.5, 0.2, 0.3, 1.0)
+    const colorB = Color.new(0.3, 0.5, 0.2, 1.0)
+    const clockwise double = -Math.PI/2
+    const centerDelta double = 10
+    const edgeDelta double = 20
+    const thickness  double = 40
+    const dotDelta double = 20
 }
 
 class CanvasDrawController {
@@ -25,49 +31,58 @@ class CanvasDrawController {
         _ctx = _inputCanvas.getContext2D
         _ctx.scale(Browser.powerOfTwoLessThanDevicePixelRatio, Browser.powerOfTwoLessThanDevicePixelRatio)
 
-        _mouseBehaviorManager.listenOnElement(_inputCanvas)
         _mouseBehaviorManager.listenOnElement(_outputCanvas)
 
         var tempPair = [Vector.new(0, 0), Vector.new(0, 0)]
+        var editing = false
+        var moving = false
         
         _mouseBehaviorManager.onDown((e MouseEvent) => {
-            if e.target == _inputCanvas || e.target == _outputCanvas {
-              tempPair = [e.location, e.location]
+            if e.target == _outputCanvas {
+                tempPair = [e.location, e.location]
             }
         })
 
-
+        _mouseBehaviorManager.onUp((e MouseEvent) => {
+            if !moving && e.target == _outputCanvas {
+                editing = !editing
+            }
+            moving = false
+        })
+        
         _mouseBehaviorManager.onMove((e MouseEvent) => {
 
             if e.isDown {
-                tempPair = _drawPair(e.location, tempPair)
+                tempPair = _drawPair(e.location, tempPair, true)
             }
+            else if editing {
+                tempPair = _drawPair(e.location, tempPair, false)
+            }
+            moving = true 
         })
 
     }
 
-    def _drawPoint(p Vector, c Color) {
-        _ctx.beginPath
-        _ctx.rect(
-            (p.x - dotRadius) as int,
-            (p.y - dotRadius) as int,
-            dotRadius * 2,
-            dotRadius * 2
+    def _drawPoint(p Vector, c Color, split bool) {
+        _ctx.clearRect(
+            (p.x - dotDelta) as int,
+            (p.y - dotDelta) as int,
+            dotDelta * 2,
+            dotDelta * 2
         )
+        if !split {
+          return
+        }
+        _ctx.beginPath
+        _ctx.rect(p.x as int, p.y as int, 1, 1)
         _ctx.fillStyle = c.toCSS
         _ctx.fill
     }
 
-    def _drawPair(center Vector, prior List<Vector>) List<Vector> {
+    def _drawPair(center Vector, prior List<Vector>, split bool) List<Vector> {
         const canvasRect = _inputCanvas.getBoundingClientRect
         const canvasShape = Vector.new(canvasRect.width,canvasRect.height)
         
-        const colorA = Color.new(0.5, 0.2, 0.3, 1.0)
-        const colorB = Color.new(0.3, 0.5, 0.2, 1.0)
-        const clockwise double = -Math.PI/2
-        const thickness  double = 30
-        const centerDelta double = 10
-        const edgeDelta double = 20
         var canDraw = false
         
         if !center.clip(canvasShape) {
@@ -90,7 +105,7 @@ class CanvasDrawController {
 
         if outer.clip(canvasShape){
             if (prior[0] - outer).length > edgeDelta {
-                _drawPoint(outer, colorA)
+                _drawPoint(outer, colorA, split)
                 prior[0] = outer
                 canDraw = true
             }
@@ -98,7 +113,7 @@ class CanvasDrawController {
 
         if inner.clip(canvasShape){
             if  (prior[1] - inner).length > edgeDelta {
-                _drawPoint(inner, colorB)
+                _drawPoint(inner, colorB, split)
                 prior[1] = inner
                 canDraw = true
             }

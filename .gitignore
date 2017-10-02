@@ -4,3 +4,4 @@ compiled/*
 bin
 www/*compiled.js
 www/glsl
+.*swp
