@@ -105,6 +105,19 @@ class Vector {
         )
     }
 
+    def clip(low Vector, high Vector) bool {
+      const delta double = 0.01
+      var lowX = x - low.x > delta
+      var lowY = y - low.y > delta
+      var highX = high.x - x > delta
+      var highY = high.y - y > delta
+      return lowX && lowY && highX && highY
+    }
+
+    def clip(high Vector) bool {
+      return self.clip(Vector.new(0,0), high)
+    }
+
     # Returns as unit vector
     def normalize Vector {
         return self / self.length
