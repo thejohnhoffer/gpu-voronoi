@@ -64,8 +64,9 @@ class CanvasDrawController {
         
         const colorA = Color.new(0.5, 0.2, 0.3, 1.0)
         const colorB = Color.new(0.3, 0.5, 0.2, 1.0)
+        const clockwise double = -Math.PI/2
         const thickness  double = 10
-        const delta double = 20
+        const delta double = 10
 
         if !outer.clip(canvasShape) {
             return prior
@@ -78,7 +79,7 @@ class CanvasDrawController {
             prior[0] = outer
 
             # Get surface normal of line drawn 
-            var surface = outerPath.rotated(Math.PI/2).normalize
+            var surface = outerPath.rotated(clockwise).normalize
             var inner = outer + surface * thickness
             var innerPath = prior[1] - inner
 
